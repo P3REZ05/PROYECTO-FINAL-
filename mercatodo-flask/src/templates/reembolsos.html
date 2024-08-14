@@ -1,0 +1,141 @@
+{% extends "layout.html" %}
+
+{% block title %}reembolso{% endblock %}
+
+{% block content %}
+
+
+<div class="container mt-5">
+    <h1>Reembolsos</h1>
+    <form method="POST" action="{{ url_for('reembolsos') }}">
+        <div class="form-group">
+            <label for="categoria">Categoría</label>
+            <select id="categoria" class="form-control" onchange="filtrarProductos()">
+                <option value="">Selecciona una categoría</option>
+                {% for categoria in categorias %}
+                    <option value="{{ categoria.ID_categoria_producto }}">{{ categoria.nombre_categoria }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="producto">Producto</label>
+            <select id="producto" name="producto" class="form-control">
+                <option value="">Selecciona un producto</option>
+                {% for producto in productos %}
+                    <option value="{{ producto.ID_producto }}" data-categoria="{{ producto.ID_categoria_producto }}">{{ producto.nombre_producto }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="cantidad">Cantidad</label>
+            <input type="number" id="cantidad" name="cantidad" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label for="descripcion">Descripción</label>
+            <input type="text" id="descripcion" name="descripcion" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label for="retorno_inventario">Retornar a inventario</label>
+            <select id="retorno_inventario" name="retorno_inventario" class="form-control">
+                <option value="true">Sí</option>
+                <option value="false">No</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Añadir al carrito de devoluciones</button>
+    </form>
+
+    <h2 class="mt-5">Carrito de devoluciones</h2>
+    {% if carrito_devoluciones %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nombre Producto</th>
+                    <th>Cantidad</th>
+                    <th>Descripción</th>
+                    <th>Retornar a Inventario</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in carrito_devoluciones %}
+                    <tr>
+                        <td>{{ item.nombre_producto }}</td>
+                        <td>{{ item.cantidad }}</td>
+                        <td>{{ item.descripcion }}</td>
+                        <td>{{ 'Sí' if item.retorno_inventario else 'No' }}</td>
+                        <td>
+                            <form action="{{ url_for('eliminar_producto_reembolso', index=loop.index0) }}" method="POST" style="display:inline;">
+                                <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No hay productos en el carrito de devoluciones</p>
+    {% endif %}
+
+    <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#cancelarModal">Cancelar reembolso</button>
+    <button type="button" class="btn btn-success" data-toggle="modal" data-target="#finalizarModal">Finalizar reembolso</button>
+</div>
+
+<!-- Modal Cancelar Reembolso -->
+<div class="modal fade" id="cancelarModal" tabindex="-1" aria-labelledby="cancelarModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cancelarModalLabel">Cancelar reembolso</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                ¿Estás seguro de que deseas cancelar el reembolso?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+                <a href="{{ url_for('cancelar_reembolso') }}" class="btn btn-primary">Sí</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Finalizar Reembolso -->
+<div class="modal fade" id="finalizarModal" tabindex="-1" aria-labelledby="finalizarModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="finalizarModalLabel">Finalizar reembolso</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                ¿Estás seguro de que deseas finalizar el reembolso?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+                <a href="{{ url_for('finalizar_reembolso') }}" class="btn btn-primary">Sí</a>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    function filtrarProductos() {
+        var categoria = document.getElementById('categoria').value;
+        var productos = document.getElementById('producto').options;
+        
+        for (var i = 0; i < productos.length; i++) {
+            var option = productos[i];
+            if (option.getAttribute('data-categoria') === categoria || categoria === '') {
+                option.style.display = 'block';
+            } else {
+                option.style.display = 'none';
+            }
+        }
+    }
+</script>
+
+
+{% endblock %}

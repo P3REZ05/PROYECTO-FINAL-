@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Historial compras{% endblock %}
+
+{% block content %}
+
+<div class="container mt-5">
+    <h1 class="mb-4">Historial de Compras</h1>
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover">
+            <thead class="bg-primary">
+                <tr>
+                    <th>ID Compra</th>
+                    <th>Fecha de Compra</th>
+                    <th>Total</th>
+                    <th>Detalles</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for compra in compras %}
+                <tr class="bg-light">
+                    <td>{{ compra.ID_compra }}</td>
+                    <td>{{ compra.fecha_compra }}</td>
+                    <td>{{ compra.valor_compra }}</td>
+                    <td>
+                        <button class="btn btn-info btn-sm" data-toggle="modal" data-target="#detalleModal{{ compra.ID_compra }}">
+                            <img id="inspectImg" src="{{ url_for('static', filename='img/inspeccionar.png') }}" alt="Detalles" class="img-fluid" style="width: 20px; height: 20px;">
+                        </button>
+
+                        <!-- Modal -->
+                        <div class="modal fade" id="detalleModal{{ compra.ID_compra }}" tabindex="-1" aria-labelledby="detalleModalLabel{{ compra.ID_compra }}" aria-hidden="true">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header bg-primary text-white">
+                                        <h5 class="modal-title" id="detalleModalLabel{{ compra.ID_compra }}">Detalles de la Compra</h5>
+                                        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <table class="table table-bordered">
+                                            <thead class="thead-light">
+                                                <tr>
+                                                    <th>Producto</th>
+                                                    <th>Cantidad</th>
+                                                    <th>Precio Unitario</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for detalle in compra.detalles %}
+                                                <tr>
+                                                    <td>{{ detalle.nombre_producto }}</td>
+                                                    <td>{{ detalle.cantidad }}</td>
+                                                    <td>{{ detalle.valor_compra_producto }}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

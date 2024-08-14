@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Dashboard de Ventas{% endblock %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+
+<h1 class="text-center">COMPRAS - MERCATODO</h1>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% for category, message in messages %}
+<div class="alert alert-{{ category }}">
+    {{ message }}
+</div>
+{% endfor %}
+{% endif %}
+{% endwith %}
+
+<form class="form-inline mb-3" method="POST" action="{{ url_for('compras') }}">
+    <label class="my-1 mr-2">Filtrar por Proveedor:</label>
+    <select class="form-control form-control-sm my-1 mr-sm-2" name="proveedor_id">
+        <option value="">Todos los proveedores</option>
+        {% for proveedor in proveedores %}
+        <option value="{{ proveedor.ID_proveedor }}">{{ proveedor.Nombre_empresa }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-primary btn-sm my-1">Filtrar</button>
+</form>
+
+<form class="form-inline mb-3" method="POST" action="{{ url_for('compras') }}">
+    <input class="form-control form-control-sm mr-sm-2" type="text" placeholder="Buscar Producto" aria-label="Buscar" name="buscar">
+    <button class="btn btn-outline-success btn-sm my-1" type="submit">Buscar</button>
+</form>
+
+<div class="row scrollable">
+    {% for producto in productos %}
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">{{ producto.nombre_producto }}</h5>
+                <p class="card-text">Precio: ${{ producto.valor_producto }}</p>
+                <form method="POST" action="{{ url_for('agregar_al_carrito', producto_id=producto.ID_producto) }}">
+                    <div class="form-row align-items-center">
+                        <div class="col-auto">
+                            <input type="number" class="form-control form-control-sm mb-2" name="cantidad" value="1" min="1">
+                            <input type="hidden" name="producto_id" value="{{ producto.ID_producto }}">
+                        </div>
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-primary btn-sm mb-2">Añadir al Carrito</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="carrito scrollable">
+    <h2>Carrito de Compras</h2>
+    {% if carrito %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Nombre Producto</th>
+                <th>Cantidad</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in carrito %}
+            <tr>
+                <td>{{ item.nombre_producto }}</td>
+                <td>{{ item.cantidad }}</td>
+                <td>
+                    <form method="POST" action="{{ url_for('eliminar_del_carrito', index=loop.index0) }}" style="display:inline;">
+                        <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div id="btnFoother" class="text-left">
+        <form method="POST" action="{{ url_for('cancelar_compra') }}" style="display:inline;">
+            <button type="submit" class="btn btn-secondary">Cancelar Compra</button>
+        </form>
+        <form method="POST" action="{{ url_for('finalizar_compra') }}" style="display:inline;">
+            <button type="submit" class="btn btn-success">Finalizar Compra</button>
+        </form>
+    </div>
+    {% else %}
+    <p>No hay productos en el carrito.</p>
+    {% endif %}
+</div>
+
+{% endblock %}

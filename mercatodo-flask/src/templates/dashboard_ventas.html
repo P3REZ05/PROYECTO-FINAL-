@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard de Ventas{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <!-- Botones de navegación y reporte -->
+    <div class="row mt-4">
+        <div class="p-3 col-md-12 text-center">
+            <a class="btn btn-primary text-dark botoncito font-weight-bold" href="{{ url_for('dashboard') }}" role="button">VENTAS</a>
+            <a class="btn btn-primary text-dark botoncito font-weight-bold" href="{{ url_for('dashboard_ventas') }}" role="button">REEMBOLSO</a>
+            <a class="btn btn-primary text-dark botoncito font-weight-bold" href="{{ url_for('compras') }}" role="button">COMPRAS</a>
+            <button class="btn btn-primary text-dark botoncito font-weight-bold" data-toggle="modal" data-target="#reportModal">REPORTE</button>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="reportModal" tabindex="-1" role="dialog" aria-labelledby="reportModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="reportModalLabel">Generar Reporte</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="reportForm">
+                        <div class="form-group">
+                            <label for="startDate">Fecha de Inicio</label>
+                            <input type="date" class="form-control" id="startDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="endDate">Fecha de Fin</label>
+                            <input type="date" class="form-control" id="endDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="format">Formato</label>
+                            <select class="form-control" id="format" required>
+                                <option value="xlsx">Excel (xlsx)</option>
+                                <option value="docx">Word (docx)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Registros</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="ventas" id="ventas">
+                                <label class="form-check-label" for="ventas">Ventas</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="compras" id="compras">
+                                <label class="form-check-label" for="compras">Compras</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="devoluciones" id="devoluciones">
+                                <label class="form-check-label" for="devoluciones">Devoluciones</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="empleados" id="empleados">
+                                <label class="form-check-label" for="empleados">Empleados</label>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Generar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+
+        <!-- Trabajadores con más ventas -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="font-weight-bold mb-0">Trabajadores con Más Ventas</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="trabajadoresVentasChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Productos con bajo stock -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="font-weight-bold mb-0">Productos con Bajo Stock</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="productosBajoStockChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Productos con precios más bajos -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="font-weight-bold mb-0">Productos con Precios Más Bajos</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Precio</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for producto in productos_precios %}
+                                <tr>
+                                    <td>{{ producto.nombre }}</td>
+                                    <td>{{ producto.precio }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Incluir Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Colores específicos
+    const backgroundColors = [
+        'rgba(255, 99, 132, 0.2)', // Rojo
+        'rgba(54, 162, 235, 0.2)', // Azul
+        'rgba(255, 206, 86, 0.2)', // Amarillo
+        'rgba(75, 192, 192, 0.2)', // Verde
+        'rgba(153, 102, 255, 0.2)', // Morado
+        'rgba(255, 159, 64, 0.2)'  // Naranja
+    ];
+
+    const borderColors = [
+        'rgba(255, 99, 132, 1)', // Rojo
+        'rgba(54, 162, 235, 1)', // Azul
+        'rgba(255, 206, 86, 1)', // Amarillo
+        'rgba(75, 192, 192, 1)', // Verde
+        'rgba(153, 102, 255, 1)', // Morado
+        'rgba(255, 159, 64, 1)'  // Naranja
+    ];
+
+    // Datos para el gráfico de trabajadores con más ventas
+    const trabajadores = {{ trabajadores | tojson }};
+    const trabajadoresLabels = trabajadores.map(t => t.nombre);
+    const trabajadoresData = trabajadores.map(t => t.ventas);
+
+    const trabajadoresVentasChartCtx = document.getElementById('trabajadoresVentasChart').getContext('2d');
+    const trabajadoresVentasChart = new Chart(trabajadoresVentasChartCtx, {
+        type: 'bar',
+        data: {
+            labels: trabajadoresLabels,
+            datasets: [{
+                label: 'Ventas',
+                data: trabajadoresData,
+                backgroundColor: backgroundColors,
+                borderColor: borderColors,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Datos para el gráfico de productos con bajo stock
+    const productos = {{ productos | tojson }};
+    const productosLabels = productos.map(p => p.nombre);
+    const productosData = productos.map(p => p.stock);
+
+    const productosBajoStockChartCtx = document.getElementById('productosBajoStockChart').getContext('2d');
+    const productosBajoStockChart = new Chart(productosBajoStockChartCtx, {
+        type: 'bar',
+        data: {
+            labels: productosLabels,
+            datasets: [{
+                label: 'Stock',
+                data: productosData,
+                backgroundColor: backgroundColors,
+                borderColor: borderColors,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Función para descargar reporte
+    document.getElementById('reportForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+        const format = document.getElementById('format').value;
+        const selectedRecords = Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(el => el.value);
+
+        fetch('/generate-report', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                start_date: startDate,
+                end_date: endDate,
+                format: format,
+                selected_records: selectedRecords
+            })
+        })
+        .then(response => response.blob())
+        .then(blob => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `reporte_tienda.${format}`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        })
+        .catch(error => console.error('Error:', error));
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,65 @@
+:root{
+    --primary: #e97127;
+    --info: #7bbee5;
+    --ligth: #ffffff;
+    --grey: #dad8d8;
+    --dark: #000000; 
+    --secondary: #1d2256;
+}
+
+
+/* LOGIN PRINCIPAL DE MERCATODO */
+
+
+.login{
+    background: var(--secondary);
+    background: linear-gradient(to right, var(--info), var(--secondary));
+}
+
+.bg {
+    background-image: url(img/m3.png);
+    background-position: center center;
+    background-size: cover;
+    height: 100vh; /* Ajusta la altura de la imagen */
+}
+
+.login-container {
+    background-color: white; /* Fondo blanco */
+    padding: 40px; /* Ajusta el espaciado interno */
+    width: 60%;
+}
+
+.small-input {
+    width: 90%; /* Ajusta el ancho de los inputs */
+}
+
+COMPRAS ADMINISTRADOR
+
+
+.container {
+    max-width: 800px;
+    margin-top: 50px;
+}
+.card {
+    margin-bottom: 20px;
+}
+.carrito {
+    margin-top: 20px;
+}
+.form-control-sm {
+    display: inline-block;
+    width: auto;
+}
+.scrollable {
+    max-height: calc(100vh - 150px); /* Ajustar según tu layout */
+    overflow-y: auto;
+}
+
+#btnFoother {
+    padding: 20px;
+}
+
+
+/* BARRA LATERAL DEL NAV BAR PRINCIPAL */
+
+
